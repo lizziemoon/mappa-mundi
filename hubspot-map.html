@@ -1,0 +1,217 @@
+<!-- =====================================================================
+     MAPPA MUNDI — HubSpot Embed
+     Cole este código em um módulo "HTML Personalizado" no HubSpot.
+     Nenhuma dependência externa além de Leaflet (CDN).
+===================================================================== -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<style>
+  #mm-wrap {
+    width: 100%;
+    font-family: 'Georgia', serif;
+    background: #f5f0e8;
+    border: 1.5px solid #c8a96e;
+  }
+  #mm-map {
+    width: 100%;
+    height: 560px;
+    filter: sepia(12%) saturate(88%);
+  }
+  #mm-footer {
+    padding: 8px 14px;
+    font-size: 11px;
+    color: #9a8c78;
+    border-top: 1px solid #d8cfbe;
+    letter-spacing: 0.5px;
+  }
+  /* Leaflet popup overrides */
+  .mm-popup .leaflet-popup-content-wrapper {
+    background: #f5f0e8;
+    border: 1.5px solid #222;
+    border-radius: 0;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.18);
+  }
+  .mm-popup .leaflet-popup-tip { background: #f5f0e8; }
+  .mm-popup .leaflet-popup-content {
+    margin: 10px 14px;
+    font-family: 'Georgia', serif;
+  }
+  .mm-popup-court {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #b84a2e;
+    margin-bottom: 3px;
+  }
+  .mm-popup-name {
+    font-size: 13px;
+    font-weight: bold;
+    color: #111;
+    line-height: 1.3;
+  }
+  .mm-popup-loc {
+    font-size: 10px;
+    color: #7a6e5e;
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+</style>
+
+<div id="mm-wrap">
+  <div id="mm-map"></div>
+  <div id="mm-footer">103 comunidades · América, Europa, África, Ásia, Oceania</div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function () {
+
+  /* ── Pins data ── */
+  var PINS = [
+    { n:1,  name:"Villa Nueva",            loc:"San Marcos, Guatemala",             lat:14.740, lng:-91.977 },
+    { n:2,  name:"Las Canoas Altas",        loc:"Sololá, Guatemala",                 lat:14.760, lng:-91.189 },
+    { n:3,  name:"Santiago Atitlán",        loc:"Sololá, Guatemala",                 lat:14.641, lng:-91.225 },
+    { n:4,  name:"Canguacha",              loc:"Senahú, Alta Verapaz, Guatemala",   lat:15.430, lng:-89.760 },
+    { n:5,  name:"Tuitzaj",                loc:"San Marcos, Guatemala",             lat:15.020, lng:-91.830 },
+    { n:6,  name:"Juil",                   loc:"Nebaj, Quiché, Guatemala",          lat:15.405, lng:-91.153 },
+    { n:7,  name:"Xejuyú",                 loc:"Sololá, Guatemala",                 lat:14.750, lng:-91.200 },
+    { n:8,  name:"San Antonio Palopó",     loc:"Sololá, Guatemala",                 lat:14.672, lng:-91.134 },
+    { n:9,  name:"Várzea Fria",            loc:"Pernambuco, Brasil",                lat:-8.440, lng:-35.970 },
+    { n:10, name:"Cantzela",               loc:"Huehuetenango, Guatemala",          lat:15.680, lng:-91.580 },
+    { n:11, name:"Cachoeira",              loc:"Alagoas, Brasil",                   lat:-9.580, lng:-36.270 },
+    { n:12, name:"Complexo do Alemão",     loc:"Rio de Janeiro, Brasil",            lat:-22.862, lng:-43.262 },
+    { n:13, name:"Foz do Iguaçu",         loc:"Paraná, Brasil",                    lat:-25.509, lng:-54.596 },
+    { n:14, name:"Penedo de Cima",         loc:"Pernambuco, Brasil",                lat:-8.350, lng:-35.860 },
+    { n:15, name:"Itaquera",               loc:"São Paulo, Brasil",                 lat:-23.533, lng:-46.451 },
+    { n:16, name:"Pinhais",                loc:"Paraná, Brasil",                    lat:-25.444, lng:-49.194 },
+    { n:17, name:"Cururuquara",            loc:"São Paulo, Brasil",                 lat:-23.590, lng:-46.740 },
+    { n:18, name:"Massangana",             loc:"Pernambuco, Brasil",                lat:-8.370, lng:-35.030 },
+    { n:19, name:"Pirituba",               loc:"São Paulo, Brasil",                 lat:-23.490, lng:-46.720 },
+    { n:20, name:"Maria Helena",           loc:"São Paulo, Brasil",                 lat:-23.510, lng:-46.680 },
+    { n:21, name:"Morro dos Macacos",      loc:"Rio de Janeiro, Brasil",            lat:-22.920, lng:-43.260 },
+    { n:22, name:"Los Depa / La Cava",     loc:"San Isidro, Argentina",             lat:-34.471, lng:-58.532 },
+    { n:23, name:"Chimalhuacán",           loc:"Estado de México, México",          lat:19.420, lng:-98.954 },
+    { n:24, name:"Cantagalo",              loc:"Rio de Janeiro, Brasil",            lat:-22.970, lng:-43.193 },
+    { n:25, name:"Santa Marta",            loc:"Rio de Janeiro, Brasil",            lat:-22.979, lng:-43.200 },
+    { n:26, name:"Fayoum",                 loc:"State of Fayoum, Egypt",            lat:29.309, lng:30.842 },
+    { n:27, name:"São Remo",               loc:"São Paulo, Brasil",                 lat:-23.562, lng:-46.723 },
+    { n:28, name:"El Coyolito",            loc:"CDMX, México",                      lat:19.290, lng:-99.100 },
+    { n:29, name:"Bandepalya",             loc:"Karnataka, India",                  lat:12.940, lng:77.590 },
+    { n:30, name:"Guabal",                 loc:"Bogotá DC, Colombia",               lat:4.620, lng:-74.108 },
+    { n:31, name:"Cohab I",                loc:"Pernambuco, Brasil",                lat:-8.120, lng:-34.960 },
+    { n:32, name:"La Doce",                loc:"Estado de México, México",          lat:19.360, lng:-99.010 },
+    { n:33, name:"Santiaguito",            loc:"Estado de México, México",          lat:19.430, lng:-99.040 },
+    { n:34, name:"Rio Doce",               loc:"Pernambuco, Brasil",                lat:-8.050, lng:-34.930 },
+    { n:35, name:"Brasília Teimosa",       loc:"Pernambuco, Brasil",                lat:-8.088, lng:-34.876 },
+    { n:36, name:"Mt. Druitt",             loc:"New South Wales, Australia",        lat:-33.768, lng:150.814 },
+    { n:37, name:"Xico Parque Sur 23",     loc:"Estado de México, México",          lat:19.291, lng:-99.092 },
+    { n:38, name:"Dharavi",                loc:"Maharashtra, India",                lat:19.042, lng:72.852 },
+    { n:39, name:"Bellavista",             loc:"Soacha, Bogotá DC, Colombia",       lat:4.578, lng:-74.218 },
+    { n:40, name:"Nanchital",              loc:"Veracruz, México",                  lat:17.990, lng:-94.410 },
+    { n:41, name:"San Gregorio",           loc:"CDMX, México",                      lat:19.220, lng:-99.040 },
+    { n:42, name:"Parque Fênix",           loc:"Pernambuco, Brasil",                lat:-8.070, lng:-34.950 },
+    { n:43, name:"Tanner Duckrey",         loc:"Pennsylvania, EUA",                 lat:39.979, lng:-75.163 },
+    { n:44, name:"Finnegan",               loc:"Pennsylvania, EUA",                 lat:39.945, lng:-75.155 },
+    { n:45, name:"Juan Pablo Duarte",      loc:"La Romana, República Dominicana",   lat:18.427, lng:-68.970 },
+    { n:46, name:"Arusha",                 loc:"State of Arusha, Tanzânia",         lat:-3.367, lng:36.682 },
+    { n:47, name:"La Piña",                loc:"Santo Domingo, República Dominicana",lat:18.490, lng:-69.900 },
+    { n:48, name:"Makoko",                 loc:"State of Lagos, Nigéria",           lat:6.498, lng:3.399 },
+    { n:49, name:"Korima",                 loc:"Estado de México, México",          lat:19.440, lng:-98.920 },
+    { n:50, name:"Santa Rita",             loc:"Prov. Buenos Aires, Argentina",     lat:-34.620, lng:-58.440 },
+    { n:51, name:"YMCA San Juan",          loc:"San Juan, Porto Rico",              lat:18.467, lng:-66.117 },
+    { n:52, name:"Bom Sucesso",            loc:"Ceará, Brasil",                     lat:-3.750, lng:-38.590 },
+    { n:53, name:"Santana de Parnaíba",    loc:"São Paulo, Brasil",                 lat:-23.443, lng:-46.917 },
+    { n:54, name:"Coyotepec",              loc:"Estado de México, México",          lat:19.772, lng:-99.205 },
+    { n:55, name:"Castainho",              loc:"Pernambuco, Brasil",                lat:-8.380, lng:-36.010 },
+    { n:56, name:"South Shore",            loc:"Chicago, EUA",                      lat:41.760, lng:-87.567 },
+    { n:57, name:"Querétaro",              loc:"Querétaro, México",                 lat:20.588, lng:-100.388 },
+    { n:58, name:"Charneca",               loc:"Pernambuco, Brasil",                lat:-8.060, lng:-34.940 },
+    { n:59, name:"Dewey Park",             loc:"Michigan, EUA",                     lat:42.380, lng:-83.100 },
+    { n:60, name:"Iztapalapa",             loc:"CDMX, México",                      lat:19.356, lng:-99.070 },
+    { n:61, name:"Alto da Bela Vista",     loc:"Pernambuco, Brasil",                lat:-8.100, lng:-34.960 },
+    { n:62, name:"Córrego da Fortuna",     loc:"Pernambuco, Brasil",                lat:-8.140, lng:-35.000 },
+    { n:63, name:"Curado IV",              loc:"Pernambuco, Brasil",                lat:-8.090, lng:-35.020 },
+    { n:64, name:"Boys and Girls Club",    loc:"Miami, Florida, EUA",               lat:25.774, lng:-80.194 },
+    { n:65, name:"Cuautlalpan / Cancha del Rio", loc:"Estado de México, México",    lat:19.590, lng:-98.890 },
+    { n:66, name:"Max Myers",              loc:"Pennsylvania, EUA",                 lat:39.960, lng:-75.170 },
+    { n:67, name:"Cagni Park",             loc:"Florida, EUA",                      lat:26.020, lng:-80.160 },
+    { n:68, name:"Samuel Park",            loc:"Pennsylvania, EUA",                 lat:39.950, lng:-75.180 },
+    { n:69, name:"Sandtown",               loc:"Maryland, EUA",                     lat:39.293, lng:-76.643 },
+    { n:70, name:"San Bartolo",            loc:"Estado de México, México",          lat:19.470, lng:-98.900 },
+    { n:71, name:"Pedro Xalostoc / Cancha Violeta", loc:"Estado de México, México", lat:19.560, lng:-99.010 },
+    { n:72, name:"Eden",                   loc:"Rio de Janeiro, Brasil",            lat:-22.960, lng:-43.570 },
+    { n:73, name:"Legacy of Light Village",loc:"Manila, Filipinas",                 lat:14.590, lng:120.980 },
+    { n:74, name:"Milpa Alta / Cancha 16", loc:"Estado de México, México",          lat:19.189, lng:-99.020 },
+    { n:75, name:"Treadwell Park",         loc:"Memphis, EUA",                      lat:35.149, lng:-90.052 },
+    { n:76, name:"Wah Sum",                loc:"Hong Kong",                         lat:22.390, lng:114.090 },
+    { n:77, name:"Kuala Ampang",           loc:"Kuala Lumpur, Malásia",             lat:3.148, lng:101.757 },
+    { n:78, name:"Tanah Baru",             loc:"Jakarta, Indonésia",                lat:-6.130, lng:106.820 },
+    { n:79, name:"Sugaw Creek Park",       loc:"North Carolina, EUA",               lat:35.287, lng:-80.752 },
+    { n:80, name:"Kensington",             loc:"Philadelphia, EUA",                 lat:39.997, lng:-75.133 },
+    { n:81, name:"Cruzeiro Velho",         loc:"Distrito Federal, Brasil",          lat:-15.780, lng:-47.940 },
+    { n:82, name:"Sancho",                 loc:"Pernambuco, Brasil",                lat:-8.115, lng:-34.920 },
+    { n:83, name:"Castleberry Hill",       loc:"Atlanta, EUA",                      lat:33.745, lng:-84.405 },
+    { n:84, name:"Wemyss Bight",           loc:"Eleuthera, Bahamas",                lat:24.690, lng:-76.155 },
+    { n:85, name:"Green Castle",           loc:"Eleuthera, Bahamas",                lat:25.430, lng:-76.640 },
+    { n:86, name:"Hatchet Bay",            loc:"Eleuthera, Bahamas",                lat:25.337, lng:-76.487 },
+    { n:87, name:"Deep Creek",             loc:"Eleuthera, Bahamas",                lat:24.940, lng:-76.334 },
+    { n:88, name:"Tarpum Bay",             loc:"Eleuthera, Bahamas",                lat:24.984, lng:-76.228 },
+    { n:89, name:"Rock Sound",             loc:"Eleuthera, Bahamas",                lat:24.900, lng:-76.177 },
+    { n:90, name:"Santa Inés",             loc:"Medellín, Colombia",                lat:6.231, lng:-75.577 },
+    { n:91, name:"Safe Hub",               loc:"Philadelphia, EUA",                 lat:39.952, lng:-75.165 },
+    { n:92, name:"A Quadra da Minha Rua | Galícia", loc:"Salvador, Brasil",         lat:-12.980, lng:-38.480 },
+    { n:93, name:"Cancha Legaria",         loc:"Mexico City, México",               lat:19.448, lng:-99.185 },
+    { n:94, name:"Paraisópolis",           loc:"São Paulo, Brasil",                 lat:-23.613, lng:-46.723 },
+    { n:95, name:"Martinica",              loc:"Jalisco, México",                   lat:20.660, lng:-103.349 },
+    { n:96, name:"Indeco",                 loc:"Mexico City, México",               lat:19.370, lng:-99.180 },
+    { n:97, name:"Santa Ana",              loc:"San Isidro, Argentina",             lat:-34.469, lng:-58.530 },
+    { n:98, name:"Vila Guaíra",            loc:"Goiás, Brasil",                     lat:-16.680, lng:-49.250 },
+    { n:99, name:"Secundaria",             loc:"Estado de México, México",          lat:19.490, lng:-99.120 },
+    { n:100, name:"Hissey Playground",     loc:"Philadelphia, EUA",                 lat:39.971, lng:-75.148 },
+    { n:101, name:"Passagem do Juazeiro",  loc:"Rio Grande do Norte, Brasil",       lat:-5.790, lng:-35.200 },
+    { n:102, name:"KirkBride School",      loc:"Philadelphia, EUA",                 lat:39.948, lng:-75.160 },
+    { n:103, name:"SLA Beeber",            loc:"Philadelphia, EUA",                 lat:39.957, lng:-75.226 }
+  ];
+
+  /* ── Map init ── */
+  var map = L.map('mm-map', {
+    center: [15, -30],
+    zoom: 2,
+    minZoom: 2,
+    maxZoom: 16,
+    zoomControl: true,
+    scrollWheelZoom: true,
+    dragging: true,
+    doubleClickZoom: true
+  });
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19
+  }).addTo(map);
+
+  /* ── Pin icon ── */
+  var ACCENT = '#b84a2e';
+
+  function makeIcon() {
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32">'
+      + '<path d="M12 0C5.37 0 0 5.37 0 12c0 8 12 20 12 20S24 20 24 12C24 5.37 18.63 0 12 0z" fill="' + ACCENT + '" stroke="rgba(0,0,0,0.25)" stroke-width="1.2"/>'
+      + '<circle cx="12" cy="12" r="5" fill="white" fill-opacity="0.85"/>'
+      + '</svg>';
+    return L.divIcon({ html: svg, className: '', iconSize: [24, 32], iconAnchor: [12, 32], popupAnchor: [0, -34] });
+  }
+
+  var icon = makeIcon();
+
+  /* ── Add markers ── */
+  PINS.forEach(function (p) {
+    var marker = L.marker([p.lat, p.lng], { icon: icon }).addTo(map);
+    var content = '<div class="mm-popup-court">Court #' + p.n + '</div>'
+      + '<div class="mm-popup-name">' + p.name + '</div>'
+      + '<div class="mm-popup-loc">' + p.loc + '</div>';
+    marker.bindPopup(content, { className: 'mm-popup', maxWidth: 220 });
+  });
+
+})();
+</script>
+<!-- ===================================================================== -->

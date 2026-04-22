@@ -206,7 +206,7 @@
   /* ── Add markers ── */
   PINS.forEach(function (p) {
     var marker = L.marker([p.lat, p.lng], { icon: icon }).addTo(map);
-    var content = '<div class="mm-popup-court">Court #' + p.n + '</div>'
+    var content = '<div class="mm-popup-court">Project #' + p.n + '</div>'
       + '<div class="mm-popup-name">' + p.name + '</div>'
       + '<div class="mm-popup-loc">' + p.loc + '</div>';
     marker.bindPopup(content, { className: 'mm-popup', maxWidth: 220 });

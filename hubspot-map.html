@@ -53,27 +53,7 @@
     margin-top: 4px;
     line-height: 1.4;
   }
-  .mm-label {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    white-space: nowrap;
-  }
-  .mm-label-inner {
-    font-family: 'Georgia', serif;
-    font-size: 10px;
-    font-weight: bold;
-    color: #1a1208;
-    text-shadow:
-      -1px -1px 0 #f5f0e8,
-       1px -1px 0 #f5f0e8,
-      -1px  1px 0 #f5f0e8,
-       1px  1px 0 #f5f0e8,
-       0    2px 3px rgba(0,0,0,0.18);
-    line-height: 1.2;
-    pointer-events: none;
-    letter-spacing: 0.2px;
-  }
+
 </style>
 
 <div id="mm-wrap">
@@ -240,11 +220,6 @@
 
   PINS.forEach(function (p) {
     var marker = L.marker([p.lat, p.lng], { icon: icon }).addTo(map);
-
-    marker.bindTooltip(
-      '<div class="mm-label-inner">' + p.name + '</div>',
-      { permanent: true, direction: 'right', offset: [10, -16], className: 'mm-label' }
-    );
 
     var content = '<div class="mm-popup-court">Court #' + p.n + '</div>'
       + '<div class="mm-popup-name">' + p.name + '</div>'
